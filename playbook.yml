@@ -1,0 +1,26 @@
+---
+- hosts: crashplan_server
+  gather_facts: False
+
+  tasks:
+    - name: read remote .ui_info file contents
+      slurp:
+        src: /var/lib/crashplan/.ui_info
+      register: remote_ui_info
+
+- hosts: crashplan_clients
+  gather_facts: False
+
+  vars:
+    local_port: 4200
+    remote_ui_info: "{{ hostvars.crashplan_server.remote_ui_info.content | b64decode }}"
+    remote_uuid: "{{ remote_ui_info.split(',')[1] }}"
+
+  tasks:
+    - name: write local .ui_info file contents
+      become: yes
+      lineinfile:
+        state: present
+        dest: /var/lib/crashplan/.ui_info
+        regexp: .
+        line: "{{ [local_port, remote_uuid, '127.0.0.1'] | join(',') }}"

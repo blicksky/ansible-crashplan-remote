@@ -1,4 +1,4 @@
-crashplan_server	ansible_host=<CRASHPLAN_SERVER_HOST>
+crashplan_server  ansible_host=<CRASHPLAN_SERVER_HOST>
 
 [crashplan_clients]
 localhost         ansible_connection=local

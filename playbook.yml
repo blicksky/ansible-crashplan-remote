@@ -1,6 +1,6 @@
 ---
 - hosts: crashplan_server
-  gather_facts: False
+  gather_facts: no
 
   tasks:
     - name: read remote .ui_info file contents
@@ -9,10 +9,11 @@
       register: remote_ui_info
 
 - hosts: crashplan_clients
-  gather_facts: False
+  gather_facts: no
 
   vars:
     local_port: 4200
+    remote_port: 4243
     remote_ui_info: "{{ hostvars.crashplan_server.remote_ui_info.content | b64decode }}"
     remote_uuid: "{{ remote_ui_info.split(',')[1] }}"
 
@@ -24,3 +25,11 @@
         dest: /var/lib/crashplan/.ui_info
         regexp: .
         line: "{{ [local_port, remote_uuid, '127.0.0.1'] | join(',') }}"
+
+    - name: establish SSH tunnnel
+      command: "ssh -NL {{ local_port }}:localhost:{{ remote_port}} {{ hostvars.crashplan_server.ansible_host }}"
+## TODO try using ssh config file
+## https://gist.github.com/scy/6781836#gistcomment-1559506
+## http://www.cyberciti.biz/faq/create-ssh-config-file-on-linux-unix/
+
+
